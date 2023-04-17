@@ -1,5 +1,10 @@
 import puppeteer from "puppeteer";
+import fs from "fs";
+import path from "path";
 
+const saveToFile = (data: any, filename: string) => {
+    fs.writeFileSync(path.join(__dirname, "..", "..", "data", `${filename}.json`), JSON.stringify(data, null, 2))
+}
 const scrapePages = async ()  => {
     const browser = await puppeteer.launch({
         headless: process.env.NODE_ENV === 'production',
@@ -54,7 +59,7 @@ const scrapePages = async ()  => {
 
         return {fullname, ...customerInfo};
     })
-    console.log(customer)
+    saveToFile(customer, "customer")
 
     // TODO: Create account object
     const accounts = await page.evaluate(() => {
@@ -74,9 +79,50 @@ const scrapePages = async ()  => {
 
     })
 
-    console.log(accounts)
-
+    saveToFile(accounts, "accounts")
     // TODO: Create transaction object
+
+    for(let i = 0; i < accounts.length; i++) {
+        const {accountId} = accounts[i]
+        const accountTransactions = [];
+        await page.click(`main > section > section:nth-child(${i + 2}) a`);
+        
+        while(true){
+            await page.waitForSelector("table > tbody")
+    
+            const transactionsInfo = await page.evaluate(() => {
+                const transactionLists = document.querySelectorAll("table > tbody > tr.bg-white");
+                const currentTotalEntities = document.querySelector("span > span:nth-child(2)").textContent;
+                const totalEntities = document.querySelector("span > span:nth-child(3)").textContent;
+    
+                const transactions =  Array.from(transactionLists).map(transaction => {
+                    const accountTransaction = {};
+                    const transactionInfoList = transaction.querySelectorAll("td, th");
+                    [
+                        "type", "date", "description", "amount", "beneficiary", "sender"
+                    ].forEach((key, index) => {
+                        let value: number | string | Date = transactionInfoList[index].textContent;
+                        accountTransaction[key] = value;
+                    })
+                    return accountTransaction;
+                })
+
+                return {next: parseInt(currentTotalEntities) < parseInt(totalEntities), transactions}
+            })
+
+            accountTransactions.push(...transactionsInfo.transactions);
+            if(!transactionsInfo.next){
+                break;
+            }
+            await page.click("button.rounded-r")
+        }
+        saveToFile(accountTransactions, `transactions-${accountId}`)
+        await page.click("nav > div > a:nth-child(1)");
+        await page.waitForSelector("main h1")
+
+    }
+
+
     // await browser.close();
 }
 
