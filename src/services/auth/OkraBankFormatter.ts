@@ -1,4 +1,4 @@
-import { Auth, IAuthFormatter } from "../IFormatter";
+import { Auth, DataSource, IAuthFormatter } from "../IFormatter";
 
 export type OkraBankAuth = {
     firstname: string 
@@ -12,7 +12,7 @@ export class OkraBankAuthFormatter implements IAuthFormatter {
 
     format(): Auth {
         return {
-            source: "okta-bank",
+            source: DataSource.OKTA_BANK,
             username: this.auth.firstname
         }
     }

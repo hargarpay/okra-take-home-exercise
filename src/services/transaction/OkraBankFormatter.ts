@@ -1,4 +1,4 @@
-import { Auth, ITransactionFormatter, Transaction, TransactionType } from "../IFormatter";
+import { Auth, DataSource, ITransactionFormatter, Transaction, TransactionType } from "../IFormatter";
 
 export type OkraBankTransaction = {
     type: TransactionType;
@@ -18,10 +18,10 @@ export class OkraBankTransactionFormatter implements ITransactionFormatter {
     format(): Transaction {
         const { type, amount, date, beneficiary, sender } = this.transaction;
         return {
-            source: "okta-bank",
+            source: DataSource.OKTA_BANK,
             type,
             amount: Number.parseFloat(amount.substring(1)),
-            date: new Date(date),
+            transactionDate: new Date(date),
             beneficiary: beneficiary,
             sender: sender,
         }
