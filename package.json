@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node scr/scrapers/index.ts",
-    "prod": "NODE_ENV=production ts-node scr/scrapers/index.ts"
+    "dev": "NODE_ENV=development ts-node src/scrapers/index.ts",
+    "prod": "NODE_ENV=production ts-node src/scrapers/index.ts"
   },
   "keywords": [],
   "author": "",
