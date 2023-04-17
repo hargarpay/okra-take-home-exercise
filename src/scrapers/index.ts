@@ -1,6 +1,11 @@
 import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
+import { OkraBankAuth, OkraBankAuthFormatter } from "../services/auth/OkraBankFormatter";
+import { OkraBankCustomer, OkraBankCustomerFormatter } from "../services/customer/OkraBankFormatter";
+import { OkraBankAccount, OkraBankAccountFormatter } from "../services/account/OkraBankFormatter";
+import { getStandardisedAccount, getStandardisedAuth, getStandardisedCustomer, getStandardisedTransaction } from "../services/fomatter";
+import { OkraBankTransaction, OkraBankTransactionFormatter } from "../services/transaction/OkraBankFormatter";
 
 const saveToFile = (data: any, filename: string) => {
     fs.writeFileSync(path.join(__dirname, "..", "..", "data", `${filename}.json`), JSON.stringify(data, null, 2))
@@ -24,26 +29,36 @@ const scrapePages = async ()  => {
     await page.click("nav > a.bg-black")
     await page.waitForSelector("#email")
 
-    const auth = {
+    const credentials = {
         email: "ifeoluwa.odewale@gmail.com",
         password: "Ifeola@0411",
         otp: "12345"
     }
 
-    await page.type("#email", auth.email)
-    await page.type("#password", auth.password)
+    await page.type("#email", credentials.email)
+    await page.type("#password", credentials.password)
     await page.click("button[type=submit]")
 
     await page.waitForSelector("#otp");
 
-    await page.type("#otp", auth.otp);
+    await page.type("#otp", credentials.otp);
 
     await Promise.all([
         page.click("button[type=submit]"),
         page.waitForNavigation()
     ])
-
     await page.waitForSelector("main h1")
+
+    const auth: OkraBankAuth = await page.evaluate(() => {
+        const firstname = document.querySelector("nav  div > a").textContent;
+        return {firstname}
+    })
+    const [standardisedAuth] = getStandardisedAuth([new OkraBankAuthFormatter(auth)])
+
+    saveToFile(auth, "auth");
+    saveToFile(standardisedAuth, "auth-standardised");
+
+
     // TODO: Create customer object
     const customer = await page.evaluate(() => {
         const main = document.querySelector("main > div")
@@ -56,10 +71,12 @@ const scrapePages = async ()  => {
             const [key, value] = paragraph.textContent.split(": ");
             customerInfo[key.trim().toLowerCase()] = value.trim();
         })
+        return {fullname, ...customerInfo}
+    }) as OkraBankCustomer
+    const [standardisedCustomer] = getStandardisedCustomer([new OkraBankCustomerFormatter(customer)])
 
-        return {fullname, ...customerInfo};
-    })
-    saveToFile(customer, "customer")
+    saveToFile(customer, "customer");
+    saveToFile(standardisedCustomer, "customer-standardised")
 
     // TODO: Create account object
     const accounts = await page.evaluate(() => {
@@ -71,20 +88,21 @@ const scrapePages = async ()  => {
             const accountInfo = {};
             ["balance", "ledgerBalance"].forEach((key, index) =>{
                 const [, amount] = accountInfoList[index].textContent.split(" ");
-                accountInfo[key] = Number.parseFloat(amount)
+                accountInfo[key] = amount
             })
-            const [,accountId] = account.querySelector("a").href.split("-")
+            const [,accountId] = account.querySelector("a").href.split("-");
             return {accountId, ...accountInfo};
         })
+    }) as OkraBankAccount[]
 
-    })
-
+    const accountsFormatWrapper = accounts.map(account => new OkraBankAccountFormatter(account))
+    const standardisedAccounts = getStandardisedAccount(accountsFormatWrapper)
     saveToFile(accounts, "accounts")
+    saveToFile(standardisedAccounts, "accounts-standardised")
     // TODO: Create transaction object
-
-    for(let i = 0; i < accounts.length; i++) {
-        const {accountId} = accounts[i]
-        const accountTransactions = [];
+    for(let i = 0; i < standardisedAccounts.length; i++) {
+        const { id: accountId } = standardisedAccounts[i]
+        const accountTransactions: OkraBankTransactionFormatter[] = [];
         await page.click(`main > section > section:nth-child(${i + 2}) a`);
         
         while(true){
@@ -101,22 +119,26 @@ const scrapePages = async ()  => {
                     [
                         "type", "date", "description", "amount", "beneficiary", "sender"
                     ].forEach((key, index) => {
-                        let value: number | string | Date = transactionInfoList[index].textContent;
-                        accountTransaction[key] = value;
+                        accountTransaction[key] = transactionInfoList[index].textContent;
                     })
                     return accountTransaction;
                 })
 
                 return {next: parseInt(currentTotalEntities) < parseInt(totalEntities), transactions}
             })
+            const transactionsFormatWraooer = (transactionsInfo.transactions as OkraBankTransaction[] )
+            .map((transaction) => new OkraBankTransactionFormatter(transaction))
 
-            accountTransactions.push(...transactionsInfo.transactions);
+            accountTransactions.push(...transactionsFormatWraooer);
             if(!transactionsInfo.next){
                 break;
             }
             await page.click("button.rounded-r")
         }
+
+        const standardisedTransactions = getStandardisedTransaction(accountTransactions);
         saveToFile(accountTransactions, `transactions-${accountId}`)
+        saveToFile(standardisedTransactions, `transactions-${accountId}-standardised`)
         await page.click("nav > div > a:nth-child(1)");
         await page.waitForSelector("main h1")
 
