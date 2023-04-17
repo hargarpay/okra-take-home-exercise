@@ -36,10 +36,28 @@ const scrapePages = async ()  => {
     await Promise.all([
         page.click("button[type=submit]"),
         page.waitForNavigation()
-    ]);
+    ])
 
-    // TODO: Create customer obhect
+    await page.waitForSelector("main h1")
+    // TODO: Create customer object
+    const customer = await page.evaluate(() => {
+        const main = document.querySelector("main > div")
+        const welcomeMessage = main.querySelector("h1").textContent;
+        // "Welcome back ".length === 13
+        const fullname = welcomeMessage.substring(13, welcomeMessage.length - 1);
+        const customerInfoList = main.querySelectorAll("p");
+        const customerInfo = {}
+        Array.from(customerInfoList).forEach((paragraph) => {
+            const [key, value] = paragraph.textContent.split(": ");
+            customerInfo[key.trim().toLowerCase()] = value.trim();
+        })
+
+        return {fullname, ...customerInfo};
+    })
+    console.log(customer)
+
     // TODO: Create account object
+
     // TODO: Create transaction object
     // await browser.close();
 }
