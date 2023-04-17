@@ -1,4 +1,4 @@
-import { Customer, ICustomerFormatter } from "../IFormatter";
+import { Customer, DataSource, ICustomerFormatter } from "../IFormatter";
 
 export type OkraBankCustomer = {
     fullname: string;
@@ -20,7 +20,7 @@ export class OkraBankCustomerFormatter implements ICustomerFormatter {
         const [firstname, lastname] = fullname.split("")
 
         return {
-            source: "okta-bank",
+            source: DataSource.OKTA_BANK,
             firstname: firstname.trim(),
             lastname: lastname.trim(),
             email: email,

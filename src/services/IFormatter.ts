@@ -1,6 +1,10 @@
 
-type FormatterType = {
-    source: "okta-bank"
+export enum DataSource {
+    OKTA_BANK = "oktaBank"
+}
+
+export type FormatterType = {
+    source: DataSource
 }
 
 export type Auth = {
@@ -16,20 +20,24 @@ export type Customer = {
 } & FormatterType
 
 export type Account = {
-    id: string;
+    accountId: string;
     balance: number;
     ledgerBalance: number;
+    currency: string;
 
 } & FormatterType
 
 
-export type TransactionType = "credit" | "debit";
+export enum TransactionType {
+    CREDIT = "credit",
+    DEBIT =  "debit"
+}
 export type Transaction = {
     type: TransactionType;
     amount: number;
     beneficiary: string;
     sender: string;
-    date: Date
+    transactionDate: Date
 } & FormatterType
 
 export interface IFormatter {

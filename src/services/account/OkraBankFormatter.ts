@@ -1,4 +1,4 @@
-import { Account, IAccountFormatter } from "../IFormatter";
+import { Account, DataSource, IAccountFormatter } from "../IFormatter";
 
 export type OkraBankAccount = {
     accountId: string;
@@ -14,8 +14,9 @@ export class OkraBankAccountFormatter implements IAccountFormatter {
 
     format(): Account {
         return {
-            source: "okta-bank",
-            id: this.account.accountId,
+            source: DataSource.OKTA_BANK,
+            currency: "USD",
+            accountId: this.account.accountId,
             balance: Number.parseFloat(this.account.balance),
             ledgerBalance: Number.parseFloat(this.account.ledgerBalance),
         }
