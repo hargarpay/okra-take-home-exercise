@@ -122,8 +122,12 @@ const scrapePages = async ()  => {
 
     }
 
-
-    // await browser.close();
+    // TODO: Logout
+    await Promise.all([
+        page.click("nav > div > a:nth-child(2)"),
+        page.waitForNavigation()
+    ])
+    await browser.close();
 }
 
 
