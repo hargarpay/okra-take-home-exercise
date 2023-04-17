@@ -57,6 +57,24 @@ const scrapePages = async ()  => {
     console.log(customer)
 
     // TODO: Create account object
+    const accounts = await page.evaluate(() => {
+        const main = document.querySelector("main > section");
+        const accountList = main.querySelectorAll("section");
+
+        return Array.from(accountList).map(account => {
+            const accountInfoList = account.querySelectorAll("p");
+            const accountInfo = {};
+            ["balance", "ledgerBalance"].forEach((key, index) =>{
+                const [, amount] = accountInfoList[index].textContent.split(" ");
+                accountInfo[key] = Number.parseFloat(amount)
+            })
+            const [,accountId] = account.querySelector("a").href.split("-")
+            return {accountId, ...accountInfo};
+        })
+
+    })
+
+    console.log(accounts)
 
     // TODO: Create transaction object
     // await browser.close();
