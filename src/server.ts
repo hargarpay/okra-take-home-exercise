@@ -13,7 +13,7 @@ export const run = async () => {
     app.get('/state/:id', scrapeState);
 
 
-    const PORT = process.env.PORT || "3000";
+    const PORT = process.env.PORT || "7000";
     app.listen(Number.parseInt(PORT), () => {
         console.log(`Server running on port ${PORT}`);
     })
