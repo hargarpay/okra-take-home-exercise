@@ -36,6 +36,11 @@ const TransactionSchema = new Schema({
     account: {
         type: mongoose.Schema.Types.ObjectId,
         ref:  ModelName.ACCOUNTS
+    },
+    reference: {
+        type: String,
+        required: true,
+        unique: true,
     }
 }, {
     timestamps: true,

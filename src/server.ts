@@ -1,4 +1,4 @@
-import "dotenv/config"
+import "dotenv/config";
 import { initiateDB } from "./startups/db";
 
 import { scrapePages } from "./scrapers";

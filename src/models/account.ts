@@ -8,7 +8,7 @@ const AccountSchema = new Schema({
         required: true,
         enum: DataSource
     },
-    accountId: { type: String, required:  true},
+    accountId: { type: String, required:  true, unique: true},
     balance: {type: Number, required: true},
     ledgerBalance: {type: Number, required: true},
     customer: {

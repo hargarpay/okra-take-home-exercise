@@ -1,3 +1,4 @@
+import { encrypted } from "../../utilities/crypto";
 import { Auth, DataSource, ITransactionFormatter, Transaction, TransactionType } from "../IFormatter";
 
 export type OkraBankTransaction = {
@@ -24,6 +25,7 @@ export class OkraBankTransactionFormatter implements ITransactionFormatter {
             transactionDate: new Date(date),
             beneficiary: beneficiary,
             sender: sender,
+            reference: encrypted(JSON.stringify(this.transaction))
         }
     }
 
