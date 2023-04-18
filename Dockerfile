@@ -1,21 +1,24 @@
-FROM node:16 as build
+FROM node:lts-alpine
 
 WORKDIR /app
-ENV TZ "Africa/Lagos"
 
-ENV PORT=7000
+RUN apk update && apk add --no-cache nmap && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache \
+      chromium \
+      harfbuzz \
+      "freetype>2.8" \
+      ttf-freefont \
+      nss
 
-COPY package.json package.json
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+COPY . /app
 
 RUN npm install
-RUN rm -rf node_modules
-RUN npm install
 
-RUN apt-get update
-RUN apt-get --yes install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+EXPOSE 3000
 
-RUN npm run build
-
-COPY . .
-
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]

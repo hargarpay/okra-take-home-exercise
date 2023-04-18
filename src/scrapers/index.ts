@@ -19,7 +19,9 @@ export const scrapePages = async (id: mongoose.Types.ObjectId)  => {
     const scrapeState = await ScrapeState.findById(id) as IScrapePhase;
     const puppeteerConfigOptions =  ['production', 'development'].includes(process.env.NODE_ENV || '') ? {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        executablePath: '/usr/bin/chromium-browser',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu',
+    ]
     } : {
         headless: false,
         defaultViewport: null
