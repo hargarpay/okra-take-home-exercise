@@ -15,9 +15,13 @@ RUN apk update && apk add --no-cache nmap && \
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-COPY . /app
+COPY package.json /app/package.json
+COPY tsconfig.json /app/tsconfig.json
 
 RUN npm install
+
+COPY . /app
+
 
 EXPOSE 7000
 
