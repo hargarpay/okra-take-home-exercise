@@ -17,11 +17,11 @@ import { ScrapePhase, ScrapePhaseStatus } from "../models/constants";
 export const scrapePages = async (id: mongoose.Types.ObjectId)  => {
 
     const scrapeState = await ScrapeState.findById(id) as IScrapePhase;
-    const puppeteerConfigOptions =  ['production'].includes(process.env.NODE_ENV || '') ? {
-        headless: false,
+    const puppeteerConfigOptions =  ['production', 'development'].includes(process.env.NODE_ENV || '') ? {
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     } : {
-        headless: process.env.NODE_ENV === 'production',
+        headless: false,
         defaultViewport: null
     }
 
