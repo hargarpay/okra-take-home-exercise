@@ -9,7 +9,7 @@ const app = express();
 export const run = async () => {
     await initiateDB();
 
-    app.get('/initate', initiateScrape);
+    app.get('/initiate', initiateScrape);
     app.get('/state/:id', scrapeState);
 
 
