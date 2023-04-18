@@ -37,7 +37,8 @@ export type Transaction = {
     amount: number;
     beneficiary: string;
     sender: string;
-    transactionDate: Date
+    transactionDate: Date,
+    reference: string;
 } & FormatterType
 
 export interface IFormatter {

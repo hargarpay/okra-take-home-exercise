@@ -71,7 +71,18 @@ export const scrapePages = async ()  => {
 
     const standardisedAccounts = getStandardisedAccount(accountsFormatWrapper);
 
-    const savedAccounts = await Account.insertMany(standardisedAccounts);
+    const savedAccounts = await Promise.all(
+        standardisedAccounts.map(account => {
+            return Account.findOneAndUpdate(
+                {
+                    accountId: account.accountId,
+                    source: account.source,
+                },
+                account,
+                { new: true, upsert: true}
+            )
+        })
+    )
 
     savedCustomer.accounts = savedAccounts.map(account => account._id)
     savedCustomer.save();
@@ -86,12 +97,26 @@ export const scrapePages = async ()  => {
         const transactionsFormatWrapper = accountTransactions.map(transaction => new OkraBankTransactionFormatter(transaction))
         const standardisedTransactions = getStandardisedTransaction(transactionsFormatWrapper);
 
-        const savedTransactions = await Transaction.insertMany(standardisedTransactions);
+        const transactionRefernces = standardisedTransactions.map(transaction => transaction.reference);
+
+        const existingTransactions = await Transaction.find({reference: {$in: transactionRefernces}})
+
+        const transactionsObj = existingTransactions.reduce((obj, transaction) => {
+            obj[transaction.reference] = true;
+            return obj;
+        }, {});
+
+        const trsansactionToSave = standardisedTransactions.filter(({reference}) => !transactionsObj[reference])
+
+        const savedTransactions = await Transaction.insertMany(trsansactionToSave);
 
         await page.click("nav > div > a:nth-child(1)");
         await page.waitForSelector("main h1")
 
-        savedAccount.transactions = savedTransactions.map(trans => trans._id)
+        savedAccount.transactions = [
+            ...savedAccount.transactions, 
+            ...savedTransactions.map(trans => trans._id)
+        ]
         await savedAccount.save();
 
         await Transaction.updateMany(
