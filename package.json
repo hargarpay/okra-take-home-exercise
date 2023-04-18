@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development ts-node src/server.ts",
     "build": "tsc",
-    "start": "NODE_ENV=production node dist/server.js",
-    "postinstall": "tsc"
+    "start": "NODE_ENV=production node dist/server.js"
   },
   "keywords": [],
   "author": "",
