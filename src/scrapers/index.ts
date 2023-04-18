@@ -32,7 +32,7 @@ export const scrapePages = async ()  => {
     
     const credentials = {
         email: "ifeoluwa.odewale@gmail.com",
-        password: process.env.USER_PASSWORD,
+        password: process.env.USER_PASSWORD || "",
         otp: "12345"
     }
 
@@ -104,7 +104,7 @@ export const scrapePages = async ()  => {
         const transactionsObj = existingTransactions.reduce((obj, transaction) => {
             obj[transaction.reference] = true;
             return obj;
-        }, {});
+        }, {} as {[key: string]: boolean});
 
         const trsansactionToSave = standardisedTransactions.filter(({reference}) => !transactionsObj[reference])
 
