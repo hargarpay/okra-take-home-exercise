@@ -7,16 +7,16 @@ export const scrapeAccountTransactions = async (page: Page): Promise<OkraBankTra
         await page.waitForSelector("table > tbody")
         const transactionsInfo = await page.evaluate(() => {
             const transactionLists = document.querySelectorAll("table > tbody > tr.bg-white");
-            const currentTotalEntities = document.querySelector("span > span:nth-child(2)").textContent;
-            const totalEntities = document.querySelector("span > span:nth-child(3)").textContent;
+            const currentTotalEntities = document?.querySelector("span > span:nth-child(2)")?.textContent as string;
+            const totalEntities = document?.querySelector("span > span:nth-child(3)")?.textContent as string;
 
             const transactions =  Array.from(transactionLists).map(transaction => {
-                const accountTransaction = {};
+                const accountTransaction = {} as Record<string, string>;
                 const transactionInfoList = transaction.querySelectorAll("td, th");
                 [
                     "type", "date", "description", "amount", "beneficiary", "sender"
                 ].forEach((key, index) => {
-                    accountTransaction[key] = transactionInfoList[index].textContent;
+                    accountTransaction[key] = transactionInfoList[index].textContent || "";
                 })
                 return accountTransaction;
             })

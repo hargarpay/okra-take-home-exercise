@@ -21,7 +21,7 @@ export const scrapeAuth = async (page: Page, credentials:  Credentials):  Promis
     await page.waitForSelector("main h1")
 
     const auth: OkraBankAuth = await page.evaluate(() => {
-        const firstname = document.querySelector("nav  div > a").textContent;
+        const firstname = document.querySelector("nav  div > a")?.textContent || "";
         return {firstname}
     })
 
